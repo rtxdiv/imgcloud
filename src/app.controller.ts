@@ -9,6 +9,6 @@ export class AppController {
 
   @Get()
   getMainPage(@Res() res: Response) {
-    res.sendFile(path.join(process.cwd(), 'public', 'main.html'))
+    res.sendFile(path.join(process.cwd(), 'public', 'index.html'))
   }
 }

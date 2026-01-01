@@ -7,6 +7,7 @@ import { ImageModule } from './image/image.module';
 import path from 'path';
 import { Images } from './entity/images.entity';
 import { ConfigModule } from '@nestjs/config';
+import { GuardsModule } from './guards/guards.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { ConfigModule } from '@nestjs/config';
     ServeStaticModule.forRoot({
       rootPath: path.join(process.cwd(), 'public')
     }),
-    ImageModule
+    ImageModule,
+    GuardsModule
   ],
   controllers: [AppController],
   providers: [AppService],

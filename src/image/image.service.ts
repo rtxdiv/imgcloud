@@ -19,33 +19,32 @@ export class ImageService {
 
         if (files.length == 0) throw new BadRequestException('Файлы не отправлены')
 
-        const exist = await this.imagesRepository.find({ where: { user_id: user_id } })
-        if (!user_id || exist.length == 0) {
-            user_id = crypto.randomUUID()
-        }
-
         const errors = new Array<string>
-        const maxSize = 1 * 1024 * 1024
+        const images = new Array<string>
+        const maxSize = 5 * 1024 * 1024
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
 
         for (const file of files) {
 
             try {
-                if (file.size > maxSize) throw new BadRequestException(`Размер файла ${file.originalname} превышает 5Мб`)
-                if (!allowedTypes.includes(file.mimetype)) throw new BadRequestException(`Файл ${file.originalname} имеет недопустимый тип`)
+                const fileName = Buffer.from(file.originalname, 'binary').toString('utf-8')
+
+                if (!allowedTypes.includes(file.mimetype)) throw new BadRequestException(`Файл ${fileName} имеет недопустимый тип`)
+                if (file.size > maxSize) throw new BadRequestException(`Размер файла ${fileName} превышает 5Мб`)
 
                 const hash = crypto.createHash('sha256')
                 hash.update(process.hrtime.bigint().toString())
                 hash.update(crypto.randomBytes(16))
                 const fullHash = hash.digest()
                 const base64url = fullHash.slice(0, 12).toString('base64url')
-
-                const date = new Date().toISOString().split('T')[0].split('-')
+                const date = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Moscow' }).split(' ')[0].split('-')
                 const filePath = `${date[0]}/${date[1]}/${date[2]}`
                 const ext = path.extname(file.originalname)
 
                 await this.imagesRepository.insert({ img_id: base64url, ext: ext, path: filePath, user_id: user_id })
                 await this.storeFile(file.buffer, base64url, ext, filePath)
+
+                images.push(base64url)
 
             } catch (err) {
                 if (err instanceof BadRequestException) {
@@ -57,8 +56,8 @@ export class ImageService {
         }
 
         return {
-            message: `Успешно загружено: ${files.length - errors.length}, ошибок загрузки: ${errors.length}`,
-            data: errors
+            images: images,
+            errors: errors
         }
     }
 
@@ -78,5 +77,11 @@ export class ImageService {
         if (!image) throw new NotFoundException('Изображение не найдено')
         const filePath = path.join(this.storagePath, image.path, image.img_id) + image?.ext
         return filePath
+    }
+
+    async getAll(user_id: string) {
+        if (!user_id) return []
+        const images = await this.imagesRepository.find({ where: { user_id: user_id }, order: { id: 'ASC' } })
+        return images
     }
 }
