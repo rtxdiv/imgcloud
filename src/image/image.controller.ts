@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ImageService } from './image.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
@@ -27,6 +27,11 @@ export class ImageController {
 
   @Post('getAll')
   async getAll(@Req() req: Request) {
-    return this.imageService.getAll(req.cookies.user_id)
+    return await this.imageService.getAll(req.cookies.user_id)
+  }
+
+  @Post('delete')
+  async delete(@Req() req: Request, @Body('img_id') img_id: string) {
+    return await this.imageService.delete(req.cookies.user_id, img_id)
   }
 }

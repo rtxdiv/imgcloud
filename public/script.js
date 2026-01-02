@@ -9,6 +9,8 @@ const popupImg = document.querySelector('#popupImg')
 const copyInp = document.querySelector('#copyInp')
 
 let isWaiting = false
+let img_id
+let imgElem
 popup.addEventListener('click', popupClose)
 
 loadImages()
@@ -55,7 +57,10 @@ async function uploadFiles() {
 
 async function loadImages() {
     const resp = await fetch('/image/getAll', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
     })
     const body = await resp.json()
 
@@ -76,13 +81,18 @@ function addFiles() {
     uploadBtn.classList.add('allowed')
 }
 
-function addImage(src) {
+function addImage(id) {
     const div = document.createElement('div')
     const img = document.createElement('img')
-    img.src = `${window.location.origin}/image/${src}`
+    img.src = `${window.location.origin}/image/${id}`
+    img.dataset.img_id = id
+    img.addEventListener('click', popupOpen)
     div.appendChild(img)
-    div.addEventListener('click', popupOpen)
     galleryBlock.prepend(div)
+}
+function removeImage() {
+    imgElem.parentNode.remove()
+    popupClose()
 }
 
 function setWaiting(waiting) {
@@ -102,18 +112,45 @@ function setWaiting(waiting) {
 }
 
 function popupOpen(event) {
-    const src = event.target.src
+    imgElem = event.target
+    const src = imgElem.src
+    const id = imgElem.dataset.img_id
     popupImg.src = src
     copyInp.value = src
+    img_id = id
     popup.style.display = 'flex'
     document.body.style.overflow = 'hidden'
 }
-function popupClose(event) {
-    if (event.target !== copyInp) window.getSelection().removeAllRanges()
-    if (event.target !== popup) return
+function popupClose(event = null) {
+    if (event) {
+        if (event.target !== copyInp) window.getSelection().removeAllRanges()
+        if (event.target !== popup) return
+    }
     popup.style.display = 'none'
     document.body.style.overflow = 'auto'
 }
+
 function selectAll() {
     copyInp.select()
+}
+
+async function deleteImg() {
+    const resp = await fetch('/image/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            img_id: img_id
+        })
+    })
+
+    if (resp.ok) {
+        messageBlock.innerHTML = ''
+        removeImage()
+
+    } else {
+        messageBlock.innerHTML = '<span class="red">Ошибка удаления файла</span>'
+        popupClose()
+    }
 }

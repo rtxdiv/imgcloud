@@ -84,4 +84,18 @@ export class ImageService {
         const images = await this.imagesRepository.find({ where: { user_id: user_id }, order: { id: 'ASC' } })
         return images
     }
+
+    async delete(user_id: string, img_id: string) {
+        if (!user_id || !img_id) throw new BadRequestException()
+
+        const image = await this.imagesRepository.findOne({ where: { img_id: img_id } })
+        if (!image || image.user_id !== user_id) throw new BadRequestException()
+
+        await this.imagesRepository.remove(image)
+        try {
+            await fs.promises.unlink(path.join(this.storagePath, image.path, image.img_id) + image.ext)
+        } catch {
+            return
+        }
+    }
 }
