@@ -4,8 +4,12 @@ const messageBlock = document.querySelector('#messageBlock')
 const uploadBtn = document.querySelector('#uploadBtn')
 const uploadBtnText = document.querySelector('#uploadText')
 const uploadBtnSpinner = document.querySelector('#uploadSpinner')
+const popup = document.querySelector('#popup')
+const popupImg = document.querySelector('#popupImg')
+const copyInp = document.querySelector('#copyInp')
 
 let isWaiting = false
+popup.addEventListener('click', popupClose)
 
 loadImages()
 
@@ -77,6 +81,7 @@ function addImage(src) {
     const img = document.createElement('img')
     img.src = `${window.location.origin}/image/${src}`
     div.appendChild(img)
+    div.addEventListener('click', popupOpen)
     galleryBlock.prepend(div)
 }
 
@@ -94,4 +99,21 @@ function setWaiting(waiting) {
         uploadBtnText.style.display = 'block'
         uploadBtnSpinner.style.display = 'none'
     }
+}
+
+function popupOpen(event) {
+    const src = event.target.src
+    popupImg.src = src
+    copyInp.value = src
+    popup.style.display = 'flex'
+    document.body.style.overflow = 'hidden'
+}
+function popupClose(event) {
+    if (event.target !== copyInp) window.getSelection().removeAllRanges()
+    if (event.target !== popup) return
+    popup.style.display = 'none'
+    document.body.style.overflow = 'auto'
+}
+function selectAll() {
+    copyInp.select()
 }
