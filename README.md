@@ -6,14 +6,14 @@
 
 ## Обзор
 
-#### Frontend
+### Frontend
 
 <div align="left">
   <img src="/images/view1.png" width="350" alt=""/>
   <img src="/images/view2.png" width="350" alt=""/>
 </div>
 
-#### Backend
+### Backend
 <div align="left">
   <img src="/images/view3.png" width="550" alt=""/>
 </div>
